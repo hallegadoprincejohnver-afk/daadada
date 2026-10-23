@@ -58,3 +58,9 @@ npm install
 API_KEY="replace-with-a-long-random-secret" ALLOWED_HOSTS="bit.ly,tinyurl.com,is.gd,rb.gy,t.co,ow.ly,buff.ly,shorturl.at" npm start
 npm test
 ```
+
+## Linkvertise and LootLabs
+
+The resolver recognizes these provider domains so it can return a clear, provider-specific response instead of falsely claiming that an ad/checkpoint page is the final destination. These are interactive monetization/checkpoint services; this API does not skip ads, automate task completion, or recover destinations from protected links. A request to one of these domains returns HTTP 422 with code `PROVIDER_CHECKPOINT_REQUIRED`.
+
+For legitimate creator integrations, use the providers' own APIs. LootLabs documents its link creation, link-encryption, and postback interfaces at https://help.lootlabs.gg/en/category/api-documentation-1vutrk2/. Linkvertise's publisher Anti-Bypass API verifies that a visitor completed the ad step: https://publisher.linkvertise.com/documentations/Anti_Bypass_Documentation.pdf.
