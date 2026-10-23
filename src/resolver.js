@@ -213,8 +213,8 @@ async function requestRedirectHeaders(url) {
         statusCode: response.statusCode || 0,
         location: typeof response.headers.location === "string" ? response.headers.location : null
       };
-      response.destroy();
       finish(resolve, result);
+      response.destroy();
     });
 
     req.on("error", (error) => {
