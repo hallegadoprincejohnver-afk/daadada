@@ -10,7 +10,19 @@ export const DEFAULT_ALLOWED_HOSTS = [
   "t.co",
   "ow.ly",
   "buff.ly",
-  "shorturl.at"
+  "shorturl.at",
+  "direct-link.net",
+  "linkvertise.com",
+  "linkvertise.net",
+  "linkvertise.download",
+  "link-to.net",
+  "link-hub.net",
+  "link-target.org",
+  "link-target.net",
+  "link-center.net",
+  "loot-link.com",
+  "links.lootlabs.gg",
+  "lootlabs.gg"
 ];
 
 export class ResolverError extends Error {
@@ -23,6 +35,35 @@ export class ResolverError extends Error {
 }
 
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
+const MONETIZATION_PROVIDER_HOSTS = {
+  Linkvertise: [
+    "direct-link.net",
+    "linkvertise.com",
+    "linkvertise.net",
+    "linkvertise.download",
+    "link-to.net",
+    "link-hub.net",
+    "link-target.org",
+    "link-target.net",
+    "link-center.net"
+  ],
+  LootLabs: [
+    "loot-link.com",
+    "links.lootlabs.gg",
+    "lootlabs.gg"
+  ]
+};
+
+export function getMonetizationProvider(hostname) {
+  const host = normalizedHost(hostname);
+  for (const [provider, hosts] of Object.entries(MONETIZATION_PROVIDER_HOSTS)) {
+    if (hosts.some((domain) => host === domain || host.endsWith("." + domain))) {
+      return provider;
+    }
+  }
+  return null;
+}
 const MAX_REDIRECTS = 8;
 const DNS_TIMEOUT_MS = 3000;
 const REQUEST_TIMEOUT_MS = 5000;
@@ -246,6 +287,15 @@ export async function resolveUrl(input, options = {}) {
   const visited = new Set();
 
   while (true) {
+    const provider = getMonetizationProvider(current.hostname);
+    if (provider) {
+      throw new ResolverError(
+        "PROVIDER_CHECKPOINT_REQUIRED",
+        provider + " links require their normal provider completion flow. This API resolves ordinary HTTPS redirects only and does not skip advertising or verification checkpoints.",
+        422
+      );
+    }
+
     if (visited.has(current.href)) {
       throw new ResolverError("REDIRECT_LOOP", "A redirect loop was detected.", 422);
     }
