@@ -2,7 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   assertInitialHostAllowed,
+  getMonetizationProvider,
   isPublicAddress,
+  resolveUrl,
   parseAllowedHosts,
   validateUrl
 } from "../src/resolver.js";
@@ -90,4 +92,37 @@ test("rejects malformed input and overly long URLs", () => {
     () => validateUrl("https://bit.ly/" + "a".repeat(2100)),
     (error) => error.code === "INVALID_URL"
   );
+});
+
+
+test("recognizes Linkvertise domains without claiming to resolve checkpoints", () => {
+  assert.equal(getMonetizationProvider("direct-link.net"), "Linkvertise");
+  assert.equal(getMonetizationProvider("linkvertise.com"), "Linkvertise");
+  assert.equal(getMonetizationProvider("www.direct-link.net"), "Linkvertise");
+});
+
+test("recognizes official LootLabs link domains", () => {
+  assert.equal(getMonetizationProvider("loot-link.com"), "LootLabs");
+  assert.equal(getMonetizationProvider("links.lootlabs.gg"), "LootLabs");
+  assert.equal(getMonetizationProvider("lootlabs.gg"), "LootLabs");
+});
+
+test("does not fetch or bypass supplied Linkvertise checkpoint URLs", async () => {
+  await assert.rejects(
+    resolveUrl("https://direct-link.net/1258318/BXT2zdn4PTmi?share_origin=explore&utm_source=copy_url"),
+    (error) => error.code === "PROVIDER_CHECKPOINT_REQUIRED" && error.statusCode === 422
+  );
+});
+
+test("does not fetch or bypass LootLabs checkpoint URLs", async () => {
+  await assert.rejects(
+    resolveUrl("https://loot-link.com/s?example"),
+    (error) => error.code === "PROVIDER_CHECKPOINT_REQUIRED" && error.statusCode === 422
+  );
+});
+
+test("does not classify unrelated hosts as monetization providers", () => {
+  assert.equal(getMonetizationProvider("bit.ly"), null);
+  assert.equal(getMonetizationProvider("example.org"), null);
+  assert.equal(getMonetizationProvider("loot-link.com.attacker.example"), null);
 });
