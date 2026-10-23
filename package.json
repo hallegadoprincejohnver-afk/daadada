@@ -1,0 +1,20 @@
+{
+  "name": "url-resolver-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Secure HTTPS redirect resolver API with API-key authentication and SSRF protections.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "ipaddr.js": "^2.2.0"
+  }
+}
